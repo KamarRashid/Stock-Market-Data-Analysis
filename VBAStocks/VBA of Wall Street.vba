@@ -41,13 +41,11 @@ Sub VBA_of_Wall_Street():
                 'Cells(posTracker,13).Value = priceOpen
             priceClose = 0
 
-
             'creating table headers
             ws.Cells(1,9).Value = "Ticker"
             ws.Cells(1,10).Value = "Yearly Change"
             ws.Cells(1,11).Value = "Percent Change"
             ws.Cells(1,12).Value = "Total Stock Volume"
-
 
             'calculate the last row of the worksheet
             Dim lastRow As long
