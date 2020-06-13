@@ -20,175 +20,188 @@
 
 Sub VBA_of_Wall_Street():
 
-    'Sub Primary_Analysis():
+    'macro to loop through all pages of the workbook
+    Dim ws As Worksheet
+    For Each ws in Worksheets
 
-        'declare variables
-        Dim i, posTracker As integer
-        Dim ticker As string
-        Dim priceOpen, priceClose, yearlyChange, percentChange, sotckVolume As double
+        'Sub Primary_Analysis():
 
-        'define variables
-        posTracker = 2
-        sotckVolume = 0
-            'setting first orice on sheet to initial open price
-        priceOpen = Range("C2")
-            'print initial opening price of first ticker
-            'Cells(posTracker,13).Value = priceOpen
-        priceClose = 0
+            'declare variables
+            Dim i, posTracker As integer
+            Dim ticker As string
+            Dim priceOpen, priceClose, yearlyChange, percentChange As double
+            Dim stockVolume As LongLong
 
-
-        'creating table headers
-        Cells(1,9).Value = "Ticker"
-        Cells(1,10).Value = "Yearly Change"
-        Cells(1,11).Value = "Percent Change"
-        Cells(1,12).Value = "Total Stock Volume"
+            'define variables
+            posTracker = 2
+            stockVolume = 0
+                'setting first orice on sheet to initial open price
+            priceOpen = ws.Range("C2")
+                'print initial opening price of first ticker
+                'Cells(posTracker,13).Value = priceOpen
+            priceClose = 0
 
 
-        'calculate the last row of the worksheet
-        Dim lastRow As long
-        lastRow = Cells(1,1).End(xlDown).Row
+            'creating table headers
+            ws.Cells(1,9).Value = "Ticker"
+            ws.Cells(1,10).Value = "Yearly Change"
+            ws.Cells(1,11).Value = "Percent Change"
+            ws.Cells(1,12).Value = "Total Stock Volume"
 
-        'for statement to loop through rows of data from row 2 to last row of worksheet
-        for i = 2 to lastRow
 
-            'if statement to check when the ticket symbol changes
-            if Cells(i,1).Value <> Cells(i+1,1).Value Then
+            'calculate the last row of the worksheet
+            Dim lastRow As long
+            lastRow = ws.Cells(1,1).End(xlDown).Row
 
-                'defining table variables
-                ticker = Cells(i,1).Value
-                'order of variable declaration matters - have to calculate yearly change before the priceOpen changes
-                priceClose = Cells(i,6).Value
-                yearlyChange = priceClose - priceOpen
-                percentChange = ((priceClose - priceOpen)/ ABS(priceClose))
-                priceOpen = Cells(i+1,3).Value
+            'for statement to loop through rows of data from row 2 to last row of worksheet
+            for i = 2 to lastRow
 
-                    'fill in table based on ticker symbol
-                    'display ticker code on column I
-                    Cells(posTracker,9).Value = ticker
-                    'calculate and display yearly change on column J
-                    Cells(posTracker,10).Value = yearlyChange
-                    'Cells(posTracker+1,13).Value = priceOpen
-                    'Cells(posTracker,14).Value = priceClose
-                    'display percent change on column K
-                    Cells(posTracker,11).Value = percentChange
-                    'display stock volume on column L
-                    Cells(posTracker,12).Value = sotckVolume + Cells(i,7).Value
-                
-                'moving down 1 row on table when ticker changes
-                posTracker = posTracker + 1
+                'if statement to check when the ticket symbol changes
+                if ws.Cells(i,1).Value <> ws.Cells(i+1,1).Value Then
 
-                'resetting table trackers
-                yearlyChange = 0
-                percentChange = 0
-                sotckVolume = 0
-                            
-            'else statement to keep track of totals and changes per ticker
-            Else
+                    'defining table variables
+                    ticker = ws.Cells(i,1).Value
+                    'order of variable declaration matters - have to calculate yearly change before the priceOpen changes
+                    priceClose = ws.Cells(i,6).Value
+                    yearlyChange = priceClose - priceOpen
+                    'if statement to work around divide by 0 error when calculating percentChange and priceClose = 0
+                    if priceClose = 0 and priceOpen = 0 Then
+                        percentChange = 0                    
+                    Else
+                        percentChange = ((priceClose - priceOpen)/ ABS(priceClose))
+                    End if
+                    priceOpen = ws.Cells(i+1,3).Value
 
-                'running total for stock volume
-                sotckVolume = sotckVolume + Cells(i,7).Value
+                        'fill in table based on ticker symbol
+                        'display ticker code on column I
+                        ws.Cells(posTracker,9).Value = ticker
+                        'calculate and display yearly change on column J
+                        ws.Cells(posTracker,10).Value = yearlyChange
+                        'Cells(posTracker+1,13).Value = priceOpen
+                        'Cells(posTracker,14).Value = priceClose
+                        'display percent change on column K
+                        ws.Cells(posTracker,11).Value = percentChange
+                        'display stock volume on column L
+                        ws.Cells(posTracker,12).Value = stockVolume + ws.Cells(i,7).Value
+                    
+                    'moving down 1 row on table when ticker changes
+                    posTracker = posTracker + 1
 
-            'end if statement to check when ticker symbol changes
-            End if
+                    'resetting table trackers
+                    yearlyChange = 0
+                    percentChange = 0
+                    stockVolume = 0
+                                
+                'else statement to keep track of totals and changes per ticker
+                Else
 
-        'end for statement to loop through rows of data
-        Next i
+                    'running total for stock volume
+                    stockVolume = stockVolume + ws.Cells(i,7).Value
 
-        'formatting of cells
-        'change percent change column to 2 decimal places
-        Range("K1:K" & Cells(1,11).End(xlDown).Row).NumberFormat = "0.00%"
+                'end if statement to check when ticker symbol changes
+                End if
 
-        'bold table headers
-        'outline table cell boxes
+            'end for statement to loop through rows of data
+            Next i
 
-        'autofit columns of worksheet table
-        Columns("J:L").Autofit
-        'change colour of yearly change cells based on +ive or -ive result 
-        lastRow = Cells(1,10).End(xlDown).Row
-        for i = 2 to lastRow
-            'if statement to loop throuch cells and check value of cells to determine color
-            if Cells(i,10).Value > 0 Then
-                Cells(i,10).Interior.ColorIndex = 4
-            Elseif Cells(i,10).Value < 0 Then
-                Cells(i,10).Interior.ColorIndex = 3
-            else
-                Cells(i,10).Interior.ColorIndex = 15
-            End if
-        Next
-        
-    'end primary analysis
-    'End Sub
-    
-    'Sub Secondary_Analysis():
+            'formatting of cells
+            'change percent change column to 2 decimal places
+            ws.Range("K1:K" & Cells(1,11).End(xlDown).Row).NumberFormat = "0.00%"
 
-        'declare variables
-        Dim maxPercentIncrease, MaxPercentDecrease As double
-        Dim maxStockVolume as long
+            'bold table headers
+            'outline table cell boxes
 
-        'define variables
-        maxPercentIncrease = 0
-        MaxPercentDecrease = 0
-        maxStockVolume = 0
-        
-        'creating table headers
-        Cells(1,16).Value = "Ticker"
-        Cells(1,17).Value = "Value"
-        Cells(2,15).Value = "Greatest % Increase"
-        Cells(3,15).Value = "Greatest % Decrease"
-        Cells(4,15).Value = "Greatest Total Volume"
-
-        'calculate the last row of primary analysis table
-        lastRow = Cells(9,1).End(xlDown).Row
-
-        'for statement to loop through primary analysis table
-        for i = 2 to lastRow
+            'autofit columns of worksheet table
+            ws.Columns("J:L").Autofit
+            'change colour of yearly change cells based on +ive or -ive result 
+            lastRow = ws.Cells(1,10).End(xlDown).Row
+            for i = 2 to lastRow
+                'if statement to loop throuch cells and check value of cells to determine color
+                if ws.Cells(i,10).Value > 0 Then
+                    ws.Cells(i,10).Interior.ColorIndex = 4
+                Elseif ws.Cells(i,10).Value < 0 Then
+                    ws.Cells(i,10).Interior.ColorIndex = 3
+                else
+                    ws.Cells(i,10).Interior.ColorIndex = 15
+                End if
+            Next
             
-            'if statement to calculate the greatest % increase
-            if Cells(i,11).Value > maxPercentIncrease Then
+        'end primary analysis
+        'End Sub
+        
+        'Sub Secondary_Analysis():
+
+            'declare variables
+            Dim maxPercentIncrease, MaxPercentDecrease As double
+            Dim maxStockVolume As LongLong
+
+            'define variables
+            maxPercentIncrease = 0
+            MaxPercentDecrease = 0
+            maxStockVolume = 0
+            
+            'creating table headers
+            ws.Cells(1,16).Value = "Ticker"
+            ws.Cells(1,17).Value = "Value"
+            ws.Cells(2,15).Value = "Greatest % Increase"
+            ws.Cells(3,15).Value = "Greatest % Decrease"
+            ws.Cells(4,15).Value = "Greatest Total Volume"
+
+            'calculate the last row of primary analysis table
+            lastRow = ws.Cells(9,1).End(xlDown).Row
+
+            'for statement to loop through primary analysis table
+            for i = 2 to lastRow
+               
+                'if statement to calculate the greatest % increase
+                if ws.Cells(i,11).Value > maxPercentIncrease Then
+                    
+                    maxPercentIncrease = ws.Cells(i,11).Value
+                    'print ticker values to table
+                    ws.Cells(2,16).Value = ws.Cells(i,9).Value
+                    'print greatest % increase value to table
+                    ws.Cells(2,17).Value = maxPercentIncrease
+
+                'ending if statement for greatest % increase
+                End if
+
+                'if statement to calculate the greatest % decrease
+                if ws.Cells(i,11).Value < maxPercentDecrease Then
+                    
+                    maxPercentDecrease = ws.Cells(i,11).Value
+                    'print ticker values to table
+                    ws.Cells(3,16).Value = ws.Cells(i,9).Value
+                    'print greatest % decrease value to table
+                    ws.Cells(3,17).Value = maxPercentDecrease
+
+                'ending if statement for greatest % decrease
+                End if
                 
-                maxPercentIncrease = Cells(i,11).Value
-                'print ticker values to table
-                Cells(2,16).Value = Cells(i,9).Value
-                'print greatest % increase value to table
-                Cells(2,17).Value = maxPercentIncrease
+                'if statement to calculate the greatest volume traded
+                if ws.Cells(i,12).Value > maxStockVolume Then
+                    
+                    maxStockVolume = ws.Cells(i,12).Value
+                    'print ticker values to table
+                    ws.Cells(4,16).Value = ws.Cells(i,9).Value
+                    'print greatest volume traded to table
+                    ws.Cells(4,17).Value = maxStockVolume
 
-            'ending if statement for greatest % increase
-            End if
+                'ending if statement for greatest volume traded
+                End if
 
-            'if statement to calculate the greatest % decrease
-            if Cells(i,11).Value < maxPercentDecrease Then
-                
-                maxPercentDecrease = Cells(i,11).Value
-                'print ticker values to table
-                Cells(3,16).Value = Cells(i,9).Value
-                'print greatest % decrease value to table
-                Cells(3,17).Value = maxPercentDecrease
+            'end for statement
+            Next i
 
-            'ending if statement for greatest % decrease
-            End if
+            'formatting secondary analysis table
+            ws.Range("Q2:Q3").NumberFormat = "0.00%"
+            'auto fit colums of secondary analysis table
+            ws.Columns("O").Autofit
+            ws.Columns("Q").Autofit
+        
+        'end secondary analysis
+        'End Sub
 
-            'if statement to calculate the greatest volume traded
-            if Cells(i,12).Value > maxStockVolume Then
-                
-                maxStockVolume = CLng(Cells(i,12).Value)
-                'print ticker values to table
-                Cells(4,16).Value = Cells(i,9).Value
-                'print greatest volume traded to table
-                Cells(4,17).Value = maxStockVolume
-
-            'ending if statement for greatest volume traded
-            End if
-
-        'end for statement
-        Next i
-
-        'formatting secondary analysis table
-        Range("Q2:Q3").NumberFormat = "0.00%"
-        'auyto fit colums of secondary analtsys table
-        Columns("O").Autofit
-        Columns("Q").Autofit
-    
-    'end secondary analysis
-    'End Sub
+    'end worksheet loop
+    Next ws
 
 End Sub
